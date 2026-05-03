@@ -1,11 +1,12 @@
 {
   "name": "highlightjs-1c-bsl",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Post-processor for highlight.js that restores missing hljs-keyword class on BSL scope-marker keywords (Функция/КонецФункции/Процедура/КонецПроцедуры/Знач)",
   "main": "src/index.js",
   "files": [
     "src/index.js",
-    "README.md"
+    "README.md",
+    "README.ru.md"
   ],
   "keywords": [
     "highlight.js",

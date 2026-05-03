@@ -1,12 +1,16 @@
 # highlightjs-1c-bsl
 
-Post-processor for [highlight.js](https://highlightjs.org/) that restores `hljs-keyword` class on BSL keywords the official 1c grammar skips.
+[🇷🇺 Русская версия](README.ru.md)
+
+Post-processor for [highlight.js](https://highlightjs.org/) that restores `hljs-keyword` coloring on BSL keywords the official `1c` grammar misses — for both **Russian** and **English** localizations of 1C:Enterprise.
 
 ## The problem
 
-The official `1c` grammar for highlight.js (by Stanislav Belov, bundled in hljs v10+) declares `Функция`, `КонецФункции`, `Процедура`, `КонецПроцедуры` as scope container begin/end markers — not as keywords. This means these words render without any color class, while `Если`, `Тогда`, `Пока`, `Возврат` and other BSL keywords are highlighted correctly.
+The official `1c` grammar for highlight.js declares `Функция / КонецФункции / Процедура / КонецПроцедуры` as scope container markers, not keywords — so these words render without any color class, while `Если / Тогда / Возврат` are highlighted correctly.
 
 `Знач` (parameter modifier) is also absent from the keyword list.
+
+**English localization:** the `1c` grammar is Russian-only. English BSL code (`Function`, `EndFunction`, `If`, `Then`, etc.) gets zero syntax coloring without this patch.
 
 ## Install
 
@@ -14,15 +18,9 @@ The official `1c` grammar for highlight.js (by Stanislav Belov, bundled in hljs 
 npm install highlightjs-1c-bsl
 ```
 
-Or directly from GitHub:
-
-```bash
-npm install andromanpro/highlightjs-1c-bsl
-```
-
 ## Usage
 
-Call `patchAll()` after `hljs.highlightAll()`:
+Call `patchAll()` right after `hljs.highlightAll()`:
 
 ```js
 import hljs from 'highlight.js/lib/core';
@@ -30,13 +28,14 @@ import lang1c from 'highlight.js/lib/languages/1c';
 import { patchAll } from 'highlightjs-1c-bsl';
 
 hljs.registerLanguage('1c', lang1c);
+
 document.addEventListener('DOMContentLoaded', () => {
   hljs.highlightAll();
-  patchAll();          // patch Функция/КонецФункции/Процедура/КонецПроцедуры/Знач
+  patchAll();
 });
 ```
 
-Or patch a single element:
+Patch a single element:
 
 ```js
 import { patch } from 'highlightjs-1c-bsl';
@@ -49,34 +48,61 @@ patch(el);
 
 ```js
 patchAll(document, {
-  extendedKeywords: false  // skip Экспорт/Перем/ВызватьИсключение (they're in hljs natively)
+  russian:         true,   // patch Russian keywords (default: true)
+  english:         true,   // patch English keywords (default: true)
+  extendedRussian: true,   // include Экспорт/Перем/ВызватьИсключение (default: true)
 });
 ```
 
-`extendedKeywords` defaults to `true`. The extended set (`Экспорт`, `Перем`, `ВызватьИсключение`) is already handled by the hljs grammar, so including them is harmless but redundant. Set to `false` for a minimal patch.
+Disable English patching (Russian-only codebase):
+
+```js
+patchAll(document, { english: false });
+```
 
 ## What gets patched
 
-| Keyword | Why patch needed |
+### Russian (RU) — critical
+
+| Keyword | Reason not colored natively |
 |---|---|
-| `Функция` | Scope container begin — no `hljs-keyword` class |
-| `КонецФункции` | Scope container end — no `hljs-keyword` class |
-| `Процедура` | Scope container begin — no `hljs-keyword` class |
-| `КонецПроцедуры` | Scope container end — no `hljs-keyword` class |
+| `Функция` | Scope container begin marker |
+| `КонецФункции` | Scope container end marker |
+| `Процедура` | Scope container begin marker |
+| `КонецПроцедуры` | Scope container end marker |
 | `Знач` | Parameter modifier — absent from keyword list |
+
+### English (EN) — grammar not supported
+
+The `1c` grammar is Russian-only. English BSL keywords get **no coloring** without this patch. The following are patched:
+
+`Function` `EndFunction` `Procedure` `EndProcedure` `Val` `Export` `Var` `Raise` — declarations and modifiers
+
+`If` `Then` `ElsIf` `Else` `EndIf` `While` `Do` `EndDo` `For` `Each` `In` `To` — control flow
+
+`Try` `Except` `EndTry` `Break` `Continue` `Return` `Goto` `New` — execution control
+
+`True` `False` `Undefined` `Null` `And` `Or` `Not` — literals and operators
+
+> **Note:** string literals, comments and numbers in English BSL code still won't be colored — the hljs grammar itself doesn't parse English 1C syntax. This patch adds keyword coloring only.
 
 ## How it works
 
-Walks DOM text nodes inside `<code.language-1c.hljs>` elements and wraps matched keywords in `<span class="hljs-keyword">`. Existing `<span>` elements from hljs are descended into but never replaced — only bare text nodes are processed, so already-highlighted tokens are not double-wrapped.
+Walks DOM text nodes inside `<code.language-1c.hljs>` elements and wraps matched keywords in `<span class="hljs-keyword">`. Existing hljs spans are descended but not replaced — only bare text nodes are processed.
 
-Uses explicit character-class word boundaries instead of `\b` (which doesn't work with Cyrillic in JS).
+Uses explicit character-class word boundaries instead of `\b` (which is ASCII-only in JavaScript and breaks on Cyrillic).
 
 ## Compatibility
 
-- highlight.js >= 10.0.0 (tested with 11.10.0)
+- highlight.js ≥ 10.0.0 (tested with 11.10.0)
 - Modern browsers (no IE)
-- Works with self-hosted hljs files (no CDN required)
+
+## Links
+
+- [GitHub](https://github.com/andromanpro/highlightjs-1c-bsl)
+- [npm](https://www.npmjs.com/package/highlightjs-1c-bsl)
+- [Live demo on androman.pro](https://androman.pro/test-1c-highlight/)
 
 ## License
 
-MIT — [andromanpro](https://androman.pro)
+MIT — [androman.pro](https://androman.pro)
