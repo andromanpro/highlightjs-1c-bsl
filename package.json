@@ -1,0 +1,36 @@
+{
+  "name": "highlightjs-1c-bsl",
+  "version": "1.0.0",
+  "description": "Post-processor for highlight.js that restores missing hljs-keyword class on BSL scope-marker keywords (Функция/КонецФункции/Процедура/КонецПроцедуры/Знач)",
+  "main": "src/index.js",
+  "files": [
+    "src/index.js",
+    "README.md"
+  ],
+  "keywords": [
+    "highlight.js",
+    "hljs",
+    "1c",
+    "bsl",
+    "1c-enterprise",
+    "syntax-highlighting",
+    "onec"
+  ],
+  "author": "andromanpro",
+  "license": "MIT",
+  "homepage": "https://github.com/andromanpro/highlightjs-1c-bsl",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/andromanpro/highlightjs-1c-bsl.git"
+  },
+  "bugs": {
+    "url": "https://github.com/andromanpro/highlightjs-1c-bsl/issues"
+  },
+  "peerDependencies": {
+    "highlight.js": ">=10.0.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=12"
+  }
+}
