@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>highlightjs-1c-bsl — live demo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css">
+<style>
+  :root {
+    --bg:    #0d1117;
+    --surface: #161b22;
+    --border: rgba(48,54,61,0.8);
+    --text:  #c9d1d9;
+    --muted: #6e7681;
+    --cyan:  #00d4ff;
+    --green: #7ee787;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    padding: 40px 24px 80px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; }
+
+  h1 {
+    font-size: 26px; font-weight: 700; letter-spacing: -.02em;
+    margin-bottom: 6px;
+    background: linear-gradient(90deg, #c9d1d9 60%, var(--cyan));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .tagline { color: var(--muted); font-size: 14px; margin-bottom: 40px; }
+  .tagline a { color: var(--cyan); text-decoration: none; }
+  .tagline a:hover { text-decoration: underline; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: -1px; }
+  .tab {
+    padding: 7px 18px;
+    font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em;
+    text-transform: uppercase; cursor: pointer;
+    background: transparent;
+    border: 1px solid transparent; border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    color: var(--muted); transition: color .15s, border-color .15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active {
+    color: var(--cyan);
+    border-color: var(--border);
+    background: var(--surface);
+  }
+
+  .panel { display: none; border: 1px solid var(--border); border-radius: 0 4px 4px 4px; }
+  .panel.active { display: block; }
+
+  .panel-inner { padding: 24px; }
+
+  .example { margin-bottom: 32px; }
+  .example:last-child { margin-bottom: 0; }
+  .example-label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 8px;
+  }
+
+  /* Override hljs to match our cyberpunk theme */
+  pre code.hljs {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    padding: 16px !important;
+    background: #0a0e17 !important;
+  }
+
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 32px; }
+  .badge {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--muted);
+  }
+  .badge span { color: var(--cyan); }
+
+  .install-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-family: var(--font-mono); font-size: 13px;
+    color: var(--green);
+    margin-bottom: 32px;
+  }
+
+  .note {
+    background: rgba(0,212,255,.06);
+    border-left: 2px solid var(--cyan);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 16px;
+  }
+  .note strong { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>highlightjs-1c-bsl</h1>
+  <p class="tagline">
+    Keyword patcher for <a href="https://highlightjs.org/">highlight.js</a> — restores
+    <code>hljs-keyword</code>, <code>hljs-literal</code> and <code>hljs-meta</code> on BSL
+    tokens the official <code>1c</code> grammar misses.
+    &nbsp;·&nbsp; <a href="https://github.com/andromanpro/highlightjs-1c-bsl">GitHub</a>
+    &nbsp;·&nbsp; <a href="https://www.npmjs.com/package/highlightjs-1c-bsl">npm</a>
+    &nbsp;·&nbsp; <a href="https://github.com/andromanpro/highlightjs-1c-bsl/blob/main/README.ru.md">README RU</a>
+    &nbsp;·&nbsp; <a href="https://androman.pro/">androman.pro</a>
+  </p>
+
+  <div class="badge-row">
+    <span class="badge">hljs <span>≥ 10.0.0</span></span>
+    <span class="badge">case-insensitive</span>
+    <span class="badge">RU + EN</span>
+    <span class="badge">no dependencies</span>
+    <span class="badge">MIT</span>
+  </div>
+
+  <div class="install-block">npm install highlightjs-1c-bsl</div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="ru">🇷🇺 Russian BSL</button>
+    <button class="tab" data-tab="en">🇬🇧 English BSL</button>
+  </div>
+
+  <!-- ── Russian panel ─────────────────────────────────────────── -->
+  <div class="panel active" id="panel-ru">
+    <div class="panel-inner">
+
+      <div class="example">
+        <div class="example-label">// запрос с виртуальной таблицей</div>
+<pre><code class="language-1c">Запрос = Новый Запрос;
+Запрос.Текст =
+"ВЫБРАТЬ
+|    ОстаткиИОбороты.Номенклатура,
+|    ОстаткиИОбороты.КоличествоКонечныйОстаток КАК Остаток
+|ИЗ
+|    РегистрНакопления.ТоварыНаСкладах.ОстаткиИОбороты(
+|        &НачалоПериода, &КонецПериода, Авто, Движения,
+|        Склад = &Склад) КАК ОстаткиИОбороты
+|ГДЕ
+|    ОстаткиИОбороты.КоличествоКонечныйОстаток <> 0";
+
+Результат = Запрос.Выполнить();
+Если НЕ Результат.Пустой() Тогда
+    Выборка = Результат.Выбрать();
+    Пока Выборка.Следующий() Цикл
+        Сообщить(Выборка.Номенклатура.Наименование);
+    КонецЦикла;
+КонецЕсли;</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-label">// серверная процедура с аннотацией</div>
+<pre><code class="language-1c">&НаСервере
+Процедура ЗаписатьДанныеНаСервере(Объект, Отказ)
+    Перем НаборЗаписей;
+
+    Попытка
+        НаборЗаписей = РегистрыНакопления.ТоварыНаСкладах.СоздатьНаборЗаписей();
+        НаборЗаписей.Отбор.Регистратор.Установить(Объект.Ссылка);
+
+        Для Каждого СтрокаТЧ Из Объект.Товары Цикл
+            Движение = НаборЗаписей.Добавить();
+            Движение.ВидДвижения  = ВидДвиженияНакопления.Расход;
+            Движение.Номенклатура = СтрокаТЧ.Номенклатура;
+            Движение.Количество   = СтрокаТЧ.Количество;
+        КонецЦикла;
+
+        НаборЗаписей.Записать();
+    Исключение
+        ОбщегоНазначенияСервер.СообщитьПользователю(
+            ПодробноеПредставлениеОшибки(ИнформацияОбОшибке()),,,,Отказ);
+    КонецПопытки;
+КонецПроцедуры
+
+&НаКлиентеНаСервере
+Функция ПолучитьОстаток(Номенклатура, Склад) Экспорт
+    Возврат РегистрыНакопления.ТоварыНаСкладах.Остатки(,
+        Новый Структура("Номенклатура,Склад", Номенклатура, Склад)
+    ).Получить(0).КоличествоОстаток;
+КонецФункции</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-label">// литералы и объявление переменных</div>
+<pre><code class="language-1c">Перем ЗначениеПоУмолчанию;
+
+ЗначениеПоУмолчанию = Неопределено;
+
+Если ЗначениеПоУмолчанию = Неопределено Тогда
+    ЗначениеПоУмолчанию = Истина;
+КонецЕсли;
+
+// NULL в запросах
+Если Выборка.Остаток = NULL Тогда
+    Сообщить("нет данных");
+КонецЕсли;</code></pre>
+      </div>
+
+      <div class="note">
+        <strong>Without the patch:</strong> <code>Процедура</code>, <code>КонецПроцедуры</code>,
+        <code>Функция</code>, <code>КонецФункции</code>, <code>Знач</code> — no coloring.
+        <code>&НаСервере</code>, <code>&НаКлиентеНаСервере</code> — plain text.
+        <code>Истина</code>, <code>Неопределено</code> — no literal class.
+      </div>
+    </div>
+  </div>
+
+  <!-- ── English panel ─────────────────────────────────────────── -->
+  <div class="panel" id="panel-en">
+    <div class="panel-inner">
+
+      <div class="example">
+        <div class="example-label">// query with virtual table</div>
+<pre><code class="language-1c">Query = New Query;
+Query.Text =
+"SELECT
+|    StockBalance.Product,
+|    StockBalance.QuantityBalance AS Balance
+|FROM
+|    AccumulationRegister.StockInWarehouses.Balance(
+|        &StartDate, &EndDate,
+|        Warehouse = &Warehouse) AS StockBalance
+|WHERE
+|    StockBalance.QuantityBalance <> 0";
+
+Result = Query.Execute();
+If NOT Result.IsEmpty() Then
+    Selection = Result.Choose();
+    While Selection.Next() Do
+        Message(Selection.Product.Description);
+    EndDo;
+EndIf;</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-label">// server procedure with annotation</div>
+<pre><code class="language-1c">&AtServer
+Procedure WriteDataAtServer(Object, Reject)
+    Var RecordSet;
+
+    Try
+        RecordSet = AccumulationRegisters.StockInWarehouses.CreateRecordSet();
+        RecordSet.Filter.Recorder.Set(Object.Ref);
+
+        For Each LineItem In Object.Goods Do
+            Movement = RecordSet.Add();
+            Movement.MovementType  = AccumulationRecordType.Expense;
+            Movement.Product       = LineItem.Product;
+            Movement.Quantity      = LineItem.Quantity;
+        EndDo;
+
+        RecordSet.Write();
+    Except
+        CommonClient.MessageToUser(
+            DetailErrorDescription(ErrorInfo()),,,,Reject);
+    EndTry;
+EndProcedure
+
+&AtServerNoContext
+Function GetBalance(Product, Warehouse) Export
+    Return AccumulationRegisters.StockInWarehouses.Balance(,
+        New Structure("Product,Warehouse", Product, Warehouse)
+    ).Get(0).QuantityBalance;
+EndFunction</code></pre>
+      </div>
+
+      <div class="example">
+        <div class="example-label">// literals and variable declaration</div>
+<pre><code class="language-1c">Var DefaultValue;
+
+DefaultValue = Undefined;
+
+If DefaultValue = Undefined Then
+    DefaultValue = True;
+EndIf;
+
+// NULL in queries
+If Selection.Balance = Null Then
+    Message("no data");
+EndIf;</code></pre>
+      </div>
+
+      <div class="note">
+        <strong>English BSL note:</strong> the official hljs <code>1c</code> grammar is
+        Russian-only. Without this patch, English BSL code gets <em>zero</em> syntax coloring —
+        keywords, literals, annotations all render as plain text.
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/languages/1c.min.js"></script>
+<script>
+// Inline the patch (no npm in plain HTML demo)
+(function(){
+  'use strict';
+  var WORD = 'a-zA-Zа-яёА-ЯЁ0-9_';
+  var RU_KW = ['Функция','КонецФункции','Процедура','КонецПроцедуры','Знач','Экспорт','Перем','ВызватьИсключение'];
+  var EN_KW = ['Function','EndFunction','Procedure','EndProcedure','Val','Export','Var','Raise','If','Then','ElsIf','Else','EndIf','While','Do','EndDo','For','Each','In','To','Try','Except','EndTry','Break','Continue','Return','Goto','New','And','Or','Not'];
+  var RU_LIT = ['Истина','Ложь','Неопределено'];
+  var EN_LIT = ['True','False','Undefined','Null'];
+  var ANN_RE = new RegExp('(^|[^a-zA-Zа-яёА-ЯЁ_&])(&[a-zA-Zа-яёА-ЯЁ_][a-zA-Zа-яёА-ЯЁ0-9_]*)','gi');
+  function re(words){ return new RegExp('(^|[^'+WORD+'])('+words.join('|')+')(?!['+WORD+'])','gi'); }
+  function esc(s){ return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+  function patch(root,rx,cls){
+    (function walk(n){
+      if(n.nodeType===3){
+        var t=n.textContent; rx.lastIndex=0; if(!rx.test(t))return; rx.lastIndex=0;
+        var h=esc(t).replace(rx,function(_,p,k){return p+'<span class="'+cls+'">'+k+'</span>';});
+        var d=document.createElement('span'); d.innerHTML=h;
+        n.replaceWith.apply(n,[].slice.call(d.childNodes));
+      } else if(n.childNodes){ [].slice.call(n.childNodes).forEach(walk); }
+    })(root);
+  }
+  document.addEventListener('DOMContentLoaded', function(){
+    hljs.highlightAll();
+    document.querySelectorAll('code.language-1c.hljs').forEach(function(el){
+      patch(el, re(RU_KW.concat(EN_KW)), 'hljs-keyword');
+      patch(el, re(RU_LIT.concat(EN_LIT)), 'hljs-literal');
+      ANN_RE.lastIndex=0; patch(el, ANN_RE, 'hljs-meta');
+    });
+  });
+})();
+</script>
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var id = btn.dataset.tab;
+    document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('active'); });
+    document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-'+id).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

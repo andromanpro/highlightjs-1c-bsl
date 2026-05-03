@@ -1,81 +1,74 @@
 /**
- * highlightjs-1c-bsl v1.1.0
+ * highlightjs-1c-bsl v1.2.0
  *
- * Post-processor for highlight.js that adds hljs-keyword class to BSL keywords
- * missed by the official 1c grammar:
+ * Post-processor for highlight.js — adds missing color classes to BSL code blocks.
  *
- * Russian localization — scope markers not tagged as keywords:
- *   Функция / КонецФункции / Процедура / КонецПроцедуры / Знач
+ * Insights from atom-language-1c-bsl (1c-syntax/atom-language-1c-bsl):
+ *   - Case-insensitive matching (BSL keywords are case-insensitive: если = ЕСЛИ = Если)
+ *   - Literals: Истина/True, Ложь/False, Неопределено/Undefined, Null
+ *   - Annotations: &НаСервере / &AtServer etc. → hljs-meta
  *
- * English localization — hljs 1c grammar is Russian-only, so ALL English BSL
- * keywords need patching. This patch covers the core control-flow set.
- *
- * Usage:
- *   import { patchAll } from 'highlightjs-1c-bsl';
- *   hljs.highlightAll();
- *   patchAll();
+ * Patched classes:
+ *   hljs-keyword  — RU scope markers + EN full keyword set
+ *   hljs-literal  — boolean/null/undefined literals (RU + EN)
+ *   hljs-meta     — annotations (&НаСервере, &AtClient, etc.)
  */
 
 'use strict';
 
-/** Chars allowed inside a BSL identifier (word boundary substitute for \b) */
+/** Chars allowed inside a BSL identifier */
 var WORD = 'a-zA-Zа-яёА-ЯЁ0-9_';
 
-/**
- * Russian: keywords that hljs 1c grammar does NOT color as hljs-keyword.
- * Scope markers (begin/end of function container) + parameter modifier.
- */
+// ── Russian keywords ─────────────────────────────────────────────────────────
+
+/** RU scope markers: NOT in hljs keyword list (used as container begin/end) */
 var RU_CRITICAL = [
   'Функция', 'КонецФункции',
   'Процедура', 'КонецПроцедуры',
   'Знач',
 ];
 
-/**
- * Russian extended: ARE in hljs keyword list, patching is harmless redundancy.
- * Useful as safety net for older hljs versions.
- */
+/** RU in hljs keyword list already; harmless safety net for older hljs versions */
 var RU_EXTENDED = [
   'Экспорт', 'Перем', 'ВызватьИсключение',
 ];
 
-/**
- * English localization of 1C:Enterprise BSL.
- * The official hljs 1c grammar is Russian-only — English keywords get zero
- * coloring without this patch. Covers the full control-flow + declaration set.
- *
- * Note: string literals, comments and numbers in English BSL code still won't
- * be colored — the grammar itself doesn't parse English syntax. Use this patch
- * for keyword highlighting only.
- */
+// ── English keywords ──────────────────────────────────────────────────────────
+// hljs 1c grammar is Russian-only — English BSL gets zero coloring without this.
+
 var EN_KEYWORDS = [
-  // Function/Procedure declarations (scope markers — same issue as Russian)
-  'Function', 'EndFunction',
-  'Procedure', 'EndProcedure',
-  // Parameter modifier
-  'Val',
-  // Control flow
+  'Function', 'EndFunction', 'Procedure', 'EndProcedure',
+  'Val', 'Export', 'Var', 'Raise',
   'If', 'Then', 'ElsIf', 'Else', 'EndIf',
   'While', 'Do', 'EndDo',
   'For', 'Each', 'In', 'To',
-  'Break', 'Continue',
-  'Return', 'Goto',
-  // Exception handling
-  'Try', 'Except', 'EndTry', 'Raise',
-  // Declarations
-  'Var', 'Export',
-  // Object creation
+  'Try', 'Except', 'EndTry',
+  'Break', 'Continue', 'Return', 'Goto',
   'New',
-  // Literals
-  'True', 'False', 'Undefined', 'Null',
-  // Logical operators
   'And', 'Or', 'Not',
 ];
 
-function buildRegex(words) {
+// ── Literals (hljs-literal) ───────────────────────────────────────────────────
+// hljs 1c grammar does not assign hljs-literal to these.
+
+var RU_LITERALS = ['Истина', 'Ложь', 'Неопределено'];
+var EN_LITERALS = ['True', 'False', 'Undefined', 'Null'];
+
+// ── Annotations (hljs-meta) ───────────────────────────────────────────────────
+// &НаСервере, &НаКлиенте, &AtServer, &AtClient, etc.
+// Matched as a unit: & + identifier. Single regex, no word list needed.
+
+var ANNOTATION_RE = new RegExp(
+  '(^|[^a-zA-Zа-яёА-ЯЁ0-9_&])(&[a-zA-Zа-яёА-ЯЁ_][a-zA-Zа-яёА-ЯЁ0-9_]*)',
+  'gi'
+);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildRegex(words, caseInsensitive) {
   return new RegExp(
     '(^|[^' + WORD + '])(' + words.join('|') + ')(?![' + WORD + '])',
-    'g'
+    caseInsensitive ? 'gi' : 'g'
   );
 }
 
@@ -85,19 +78,15 @@ function escapeHtml(s) {
   });
 }
 
-/**
- * Walk text nodes inside `root`, wrapping keyword matches in hljs-keyword spans.
- * Only bare text nodes are touched — existing hljs spans are descended but not replaced.
- */
-function patchTextNodes(root, regex) {
+function patchTextNodes(root, regex, cls) {
   function walk(node) {
-    if (node.nodeType === 3 /* TEXT_NODE */) {
+    if (node.nodeType === 3) {
       var text = node.textContent;
       regex.lastIndex = 0;
       if (!regex.test(text)) return;
       regex.lastIndex = 0;
       var html = escapeHtml(text).replace(regex, function (_, pre, kw) {
-        return pre + '<span class="hljs-keyword">' + kw + '</span>';
+        return pre + '<span class="' + cls + '">' + kw + '</span>';
       });
       var holder = document.createElement('span');
       holder.innerHTML = html;
@@ -111,33 +100,46 @@ function patchTextNodes(root, regex) {
 
 /**
  * Patch a single <code> element processed by hljs.
+ *
  * @param {HTMLElement} el
  * @param {Object}  [options]
- * @param {boolean} [options.russian=true]          - patch Russian keywords
- * @param {boolean} [options.english=true]          - patch English keywords
- * @param {boolean} [options.extendedRussian=true]  - include RU_EXTENDED safety set
+ * @param {boolean} [options.russian=true]          patch Russian keywords
+ * @param {boolean} [options.english=true]          patch English keywords
+ * @param {boolean} [options.literals=true]         patch Истина/True/Ложь/False/Неопределено/Null
+ * @param {boolean} [options.annotations=true]      patch &НаСервере / &AtServer etc.
+ * @param {boolean} [options.extendedRussian=true]  include RU_EXTENDED safety set
  */
 function patch(el, options) {
-  var opts = options || {};
-  var ru      = opts.russian         !== false;
-  var en      = opts.english         !== false;
-  var ruExt   = opts.extendedRussian !== false;
+  var o = options || {};
+  var ru   = o.russian      !== false;
+  var en   = o.english      !== false;
+  var lit  = o.literals     !== false;
+  var ann  = o.annotations  !== false;
+  var ruEx = o.extendedRussian !== false;
 
-  var words = [];
-  if (ru) {
-    words = words.concat(RU_CRITICAL);
-    if (ruExt) words = words.concat(RU_EXTENDED);
+  // Keywords → hljs-keyword (case-insensitive per BSL spec)
+  var kw = [];
+  if (ru) { kw = kw.concat(RU_CRITICAL); if (ruEx) kw = kw.concat(RU_EXTENDED); }
+  if (en) kw = kw.concat(EN_KEYWORDS);
+  if (kw.length) patchTextNodes(el, buildRegex(kw, true), 'hljs-keyword');
+
+  // Literals → hljs-literal (case-insensitive)
+  var lits = [];
+  if (lit && ru) lits = lits.concat(RU_LITERALS);
+  if (lit && en) lits = lits.concat(EN_LITERALS);
+  if (lits.length) patchTextNodes(el, buildRegex(lits, true), 'hljs-literal');
+
+  // Annotations → hljs-meta
+  if (ann) {
+    ANNOTATION_RE.lastIndex = 0;
+    patchTextNodes(el, ANNOTATION_RE, 'hljs-meta');
   }
-  if (en) words = words.concat(EN_KEYWORDS);
-
-  if (words.length === 0) return;
-  patchTextNodes(el, buildRegex(words));
 }
 
 /**
- * Patch all <code.language-1c.hljs> elements in the document (or under root).
+ * Patch all <code.language-1c.hljs> elements.
  * @param {HTMLElement|Document} [root=document]
- * @param {Object} [options] - same as patch()
+ * @param {Object} [options]
  */
 function patchAll(root, options) {
   var ctx = root || document;

@@ -99,6 +99,7 @@ Uses explicit character-class word boundaries instead of `\b` (which is ASCII-on
 
 ## Links
 
+- [Live demo](https://andromanpro.github.io/highlightjs-1c-bsl/) — RU + EN examples, both patched
 - [GitHub](https://github.com/andromanpro/highlightjs-1c-bsl)
 - [npm](https://www.npmjs.com/package/highlightjs-1c-bsl)
 - [Live demo on androman.pro](https://androman.pro/test-1c-highlight/)

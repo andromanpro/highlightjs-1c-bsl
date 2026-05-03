@@ -99,6 +99,7 @@ patchAll(document, { english: false });
 
 ## Ссылки
 
+- [Live demo](https://andromanpro.github.io/highlightjs-1c-bsl/) — примеры RU + EN с патчем
 - [GitHub](https://github.com/andromanpro/highlightjs-1c-bsl)
 - [npm](https://www.npmjs.com/package/highlightjs-1c-bsl)
 - [Live demo на androman.pro](https://androman.pro/test-1c-highlight/)
