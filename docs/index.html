@@ -148,7 +148,8 @@
 <pre><code class="language-1c">Запрос = Новый Запрос;
 Запрос.Текст =
 "ВЫБРАТЬ
-|    ОстаткиИОбороты.Номенклатура,
+|    ОстаткиИОбороты.Номенклатура КАК Номенклатура,
+|    ОстаткиИОбороты.Номенклатура.Наименование КАК НоменклатураНаименование,
 |    ОстаткиИОбороты.КоличествоКонечныйОстаток КАК Остаток
 |ИЗ
 |    РегистрНакопления.ТоварыНаСкладах.ОстаткиИОбороты(
@@ -157,11 +158,18 @@
 |ГДЕ
 |    ОстаткиИОбороты.КоличествоКонечныйОстаток <> 0";
 
+Запрос.УстановитьПараметр("НачалоПериода", НачалоДня(ТекущаяДата()));
+Запрос.УстановитьПараметр("КонецПериода",  КонецДня(ТекущаяДата()));
+Запрос.УстановитьПараметр("Склад",         Склад);
+
 Результат = Запрос.Выполнить();
 Если НЕ Результат.Пустой() Тогда
     Выборка = Результат.Выбрать();
     Пока Выборка.Следующий() Цикл
-        Сообщить(Выборка.Номенклатура.Наименование);
+        ОбщегоНазначения.СообщитьПользователю(СтрШаблон(
+            "%1, остаток: %2",
+            Выборка.НоменклатураНаименование,
+            Формат(Выборка.Остаток, "ЧДЦ=3")));
     КонецЦикла;
 КонецЕсли;</code></pre>
       </div>
@@ -170,8 +178,6 @@
         <div class="example-label">// серверная процедура с аннотацией</div>
 <pre><code class="language-1c">&НаСервере
 Процедура ЗаписатьДанныеНаСервере(Объект, Отказ)
-    Перем НаборЗаписей;
-
     Попытка
         НаборЗаписей = РегистрыНакопления.ТоварыНаСкладах.СоздатьНаборЗаписей();
         НаборЗаписей.Отбор.Регистратор.Установить(Объект.Ссылка);
@@ -185,16 +191,28 @@
 
         НаборЗаписей.Записать();
     Исключение
-        ОбщегоНазначенияСервер.СообщитьПользователю(
-            ПодробноеПредставлениеОшибки(ИнформацияОбОшибке()),,,,Отказ);
+        ОбщегоНазначения.СообщитьПользователю(
+            ОбработкаОшибок.ПодробноеПредставлениеОшибки(ИнформацияОбОшибке()),
+            ,,,, Отказ);
     КонецПопытки;
 КонецПроцедуры
 
-&НаКлиентеНаСервере
+&НаСервереБезКонтекста
 Функция ПолучитьОстаток(Номенклатура, Склад) Экспорт
-    Возврат РегистрыНакопления.ТоварыНаСкладах.Остатки(,
-        Новый Структура("Номенклатура,Склад", Номенклатура, Склад)
-    ).Получить(0).КоличествоОстаток;
+    Запрос = Новый Запрос;
+    Запрос.Текст =
+    "ВЫБРАТЬ
+    |    ЕСТЬNULL(Остатки.КоличествоОстаток, 0) КАК КоличествоОстаток
+    |ИЗ
+    |    РегистрНакопления.ТоварыНаСкладах.Остатки(
+    |        , Номенклатура = &Номенклатура И Склад = &Склад) КАК Остатки";
+    Запрос.УстановитьПараметр("Номенклатура", Номенклатура);
+    Запрос.УстановитьПараметр("Склад",        Склад);
+    Выборка = Запрос.Выполнить().Выбрать();
+    Если Выборка.Следующий() Тогда
+        Возврат Выборка.КоличествоОстаток;
+    КонецЕсли;
+    Возврат 0;
 КонецФункции</code></pre>
       </div>
 
@@ -202,15 +220,13 @@
         <div class="example-label">// литералы и объявление переменных</div>
 <pre><code class="language-1c">Перем ЗначениеПоУмолчанию;
 
-ЗначениеПоУмолчанию = Неопределено;
-
-Если ЗначениеПоУмолчанию = Неопределено Тогда
+Если НЕ ЗначениеЗаполнено(ЗначениеПоУмолчанию) Тогда
     ЗначениеПоУмолчанию = Истина;
 КонецЕсли;
 
-// NULL в запросах
+// NULL в запросах — безопасное сравнение через ЕСТЬNULL()
 Если Выборка.Остаток = NULL Тогда
-    Сообщить("нет данных");
+    ОбщегоНазначения.СообщитьПользователю(НСтр("ru = 'нет данных'"));
 КонецЕсли;</code></pre>
       </div>
 
@@ -232,7 +248,8 @@
 <pre><code class="language-1c">Query = New Query;
 Query.Text =
 "SELECT
-|    StockBalance.Product,
+|    StockBalance.Product AS Product,
+|    StockBalance.Product.Description AS ProductDescription,
 |    StockBalance.QuantityBalance AS Balance
 |FROM
 |    AccumulationRegister.StockInWarehouses.Balance(
@@ -241,11 +258,18 @@ Query.Text =
 |WHERE
 |    StockBalance.QuantityBalance <> 0";
 
+Query.SetParameter("StartDate", BegOfDay(CurrentDate()));
+Query.SetParameter("EndDate",   EndOfDay(CurrentDate()));
+Query.SetParameter("Warehouse", Warehouse);
+
 Result = Query.Execute();
 If NOT Result.IsEmpty() Then
     Selection = Result.Choose();
     While Selection.Next() Do
-        Message(Selection.Product.Description);
+        Common.MessageToUser(StrTemplate(
+            "%1, balance: %2",
+            Selection.ProductDescription,
+            Format(Selection.Balance, "NFD=3")));
     EndDo;
 EndIf;</code></pre>
       </div>
@@ -254,8 +278,6 @@ EndIf;</code></pre>
         <div class="example-label">// server procedure with annotation</div>
 <pre><code class="language-1c">&AtServer
 Procedure WriteDataAtServer(Object, Reject)
-    Var RecordSet;
-
     Try
         RecordSet = AccumulationRegisters.StockInWarehouses.CreateRecordSet();
         RecordSet.Filter.Recorder.Set(Object.Ref);
@@ -269,16 +291,28 @@ Procedure WriteDataAtServer(Object, Reject)
 
         RecordSet.Write();
     Except
-        CommonClient.MessageToUser(
-            DetailErrorDescription(ErrorInfo()),,,,Reject);
+        Common.MessageToUser(
+            ErrorProcessing.DetailErrorDescription(ErrorInfo()),
+            ,,,, Reject);
     EndTry;
 EndProcedure
 
 &AtServerNoContext
 Function GetBalance(Product, Warehouse) Export
-    Return AccumulationRegisters.StockInWarehouses.Balance(,
-        New Structure("Product,Warehouse", Product, Warehouse)
-    ).Get(0).QuantityBalance;
+    Query = New Query;
+    Query.Text =
+    "SELECT
+    |    ISNULL(Balance.QuantityBalance, 0) AS QuantityBalance
+    |FROM
+    |    AccumulationRegister.StockInWarehouses.Balance(
+    |        , Product = &Product AND Warehouse = &Warehouse) AS Balance";
+    Query.SetParameter("Product",   Product);
+    Query.SetParameter("Warehouse", Warehouse);
+    Selection = Query.Execute().Choose();
+    If Selection.Next() Then
+        Return Selection.QuantityBalance;
+    EndIf;
+    Return 0;
 EndFunction</code></pre>
       </div>
 
@@ -286,15 +320,13 @@ EndFunction</code></pre>
         <div class="example-label">// literals and variable declaration</div>
 <pre><code class="language-1c">Var DefaultValue;
 
-DefaultValue = Undefined;
-
-If DefaultValue = Undefined Then
+If NOT ValueIsFilled(DefaultValue) Then
     DefaultValue = True;
 EndIf;
 
-// NULL in queries
+// NULL in queries — safe comparison via ISNULL()
 If Selection.Balance = Null Then
-    Message("no data");
+    Common.MessageToUser(NStr("en = 'no data'"));
 EndIf;</code></pre>
       </div>
 
