@@ -107,3 +107,7 @@ Uses explicit character-class word boundaries instead of `\b` (which is ASCII-on
 ## License
 
 MIT — [androman.pro](https://androman.pro)
+
+---
+
+🌐 [androman.pro](https://androman.pro) · ✈ [Telegram](https://t.me/andromanpro1c)
